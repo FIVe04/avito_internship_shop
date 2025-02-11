@@ -35,7 +35,11 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 async def init_db():
     async with engine.begin() as conn:
+        from app.models.user import User
+        from app.models.product import Product
+        from app.models.inventory import Inventory
         await conn.run_sync(Base.metadata.create_all)
+
 
 
 async def cleanup_db():

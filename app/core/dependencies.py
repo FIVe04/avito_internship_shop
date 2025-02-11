@@ -9,10 +9,10 @@ from app.services.auth import oauth2_scheme, verify_token
 
 async def get_db() -> AsyncSession:
     async with async_session_maker() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+        yield session
+
+        await session.commit()
+        await session.close()
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_db)):
@@ -21,9 +21,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSe
         detail="Invalid credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    print('aboba')
     payload = verify_token(token)
-    print(payload)
     if payload is None:
         raise credentials_exception
 

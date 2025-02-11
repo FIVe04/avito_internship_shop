@@ -1,4 +1,5 @@
 from fastapi import Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -15,3 +16,10 @@ async def add_user(username: str, hashed_password: str, session: AsyncSession) -
     await session.commit()
     await session.refresh(user)
     return user
+
+
+async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
+    result = await session.execute(select(User).filter(User.id == user_id))
+    user = result.scalar_one_or_none()
+    return user
+
