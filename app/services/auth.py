@@ -21,6 +21,7 @@ def get_password_hash(password):
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    print(settings.SECRET_KEY, settings.ALGORITHM)
     to_encode = data.copy()
     expire = get_expiration_timestamp_access_token(expires_delta)
     to_encode.update({"exp": expire})
