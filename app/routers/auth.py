@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.responses import JSONResponse
+
 
 from app.core.config import settings
 from app.core.dependencies import get_db, get_current_user
@@ -29,7 +28,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
-    return {"access_token": access_token}
+    return {"token": access_token}
 
 
 @router.get("/secure")

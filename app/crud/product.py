@@ -23,3 +23,9 @@ async def get_product_by_name(db: AsyncSession, name: str) -> Product:
     result = await db.execute(select(Product).filter(Product.name == name))
     product = result.scalar_one_or_none()
     return product
+
+
+async def get_product_by_id(db: AsyncSession, id: int) -> Product:
+    result = await db.execute(select(Product).filter(Product.id == id))
+    product = result.scalar_one_or_none()
+    return product

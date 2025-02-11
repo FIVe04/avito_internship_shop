@@ -23,3 +23,8 @@ async def get_user_by_id(user_id: int, session: AsyncSession) -> User:
     user = result.scalar_one_or_none()
     return user
 
+
+async def get_user_by_username(username: str, session: AsyncSession) -> User:
+    result = await session.execute(select(User).filter(User.username == username))
+    user = result.scalar_one_or_none()
+    return user

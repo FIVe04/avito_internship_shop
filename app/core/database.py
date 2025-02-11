@@ -38,6 +38,7 @@ async def init_db():
         from app.models.user import User
         from app.models.product import Product
         from app.models.inventory import Inventory
+        from app.models.transaction import Transaction
         await conn.run_sync(Base.metadata.create_all)
 
 
