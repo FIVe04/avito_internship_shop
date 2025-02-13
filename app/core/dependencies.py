@@ -18,7 +18,7 @@ async def get_db() -> AsyncSession:
 async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials",
+        detail="Unauthorized.",
         headers={"WWW-Authenticate": "Bearer"},
     )
     payload = verify_token(token)
