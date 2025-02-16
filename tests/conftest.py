@@ -7,11 +7,12 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection, AsyncTr
 from app.core.dependencies import get_db
 from app.crud.product import add_products_to_db
 from app.main import app
+from tests.settings import settings
 
 
 pytestmark = pytest.mark.anyio
 
-engine = create_async_engine("postgresql+asyncpg://ivanfrolov:Ivan07051978@localhost:5432/avito_test")
+engine = create_async_engine(settings.TEST_DATABASE_URL)
 
 
 @pytest.fixture(scope="session")
@@ -52,6 +53,7 @@ async def session(
     async_session = AsyncSession(
         bind=connection,
         join_transaction_mode="create_savepoint",
+        expire_on_commit=False
     )
 
     yield async_session
@@ -67,6 +69,7 @@ async def client(
         async_session = AsyncSession(
             bind=connection,
             join_transaction_mode="create_savepoint",
+            expire_on_commit=False
         )
         async with async_session:
             yield async_session
