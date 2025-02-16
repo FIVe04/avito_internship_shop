@@ -6,6 +6,11 @@ class TransactionCreate(BaseModel):
     amount: conint(gt=0)
 
 
+class TransactionRequest(BaseModel):
+    toUser: str
+    amount: conint(gt=0)
+
+
 class CoinTransaction(BaseModel):
     amount: int
 
