@@ -10,24 +10,7 @@ import pytest
 pytestmark = pytest.mark.anyio
 
 
-async def test_api_first_auth(client: AsyncClient, session: AsyncSession):
-    test_name = "testuser"
-    test_password = "testpassword"
-    async with client as ac:
-        response = await ac.post(
-            "/api/auth/",
-            data={"username": test_name, "password": test_password},
-        )
-        assert response.status_code == 200
-
-        token = response.json().get('access_token')
-        assert token is not None
-
-        created_user = await get_current_user(token, session)
-        assert created_user.username == test_name
-
-
-async def test_api_purchase(client: AsyncClient, session: AsyncSession):
+async def test_e2e_purchase(client: AsyncClient, session: AsyncSession):
     test_item = "cup"
     async with client as ac:
         auth_response = await ac.post(
@@ -51,7 +34,6 @@ async def test_api_purchase(client: AsyncClient, session: AsyncSession):
 
         purchase_response_not_found = await ac.post(
             f"/api/buy/?item=fork",
-            json={"item": test_item},
             headers={"Authorization": f"Bearer {token}"}
         )
 
@@ -68,7 +50,38 @@ async def test_api_purchase(client: AsyncClient, session: AsyncSession):
         assert purchase_response_not_authenticated.json().get('detail') == 'Unauthorized.'
 
 
-async def test_api_send_coins(client: AsyncClient, session: AsyncSession):
+        auth_response_2 = await ac.post(
+            "/api/auth/",
+            data={"username": "testUser2", "password": "passwd"},
+        )
+
+        result_user = await session.execute(select(User).where(User.username == "testUser2"))    # type: ignore
+        assert result_user.scalar_one_or_none().username == "testUser2"
+
+        token = auth_response_2.json().get("access_token")
+        assert token is not None
+        purchase_response_fine_2 = await ac.post(
+            f"/api/buy/?item=pink-hoody",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert purchase_response_fine_2.status_code == 200
+
+        purchase_response_fine_3 = await ac.post(
+            f"/api/buy/?item=pink-hoody",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert purchase_response_fine_3.status_code == 200
+
+        purchase_response_not_enough = await ac.post(
+            f"/api/buy/?item=pink-hoody",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert purchase_response_not_enough.status_code == 400
+        assert purchase_response_not_enough.json().get('detail') == 'Not enough coins'
+
+
+async def test_e2e_send_coins(client: AsyncClient, session: AsyncSession):
     user1 = {
         'username': 'user1',
         'password': 'password'
@@ -108,21 +121,17 @@ async def test_api_send_coins(client: AsyncClient, session: AsyncSession):
             headers=headers_user1,
         )
 
+        send_coins_unknown_user = await ac.post(
+            "/api/sendCoin/",
+            json={"toUser": 'none', "amount": amount_large},
+            headers=headers_user1,
+        )
+
+        assert send_coins_unknown_user.status_code == 400
+        assert send_coins_unknown_user.json().get('detail') == 'User not found.'
+
         assert send_coins_response.status_code == 200
 
         assert send_coins_large_response.status_code == 400
         assert send_coins_large_response.json().get('detail') == 'Not enough coins.'
-
-
-
-
-
-
-
-
-
-
-
-
-
 
