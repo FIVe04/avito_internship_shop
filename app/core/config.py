@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, ConfigDict, Extra
 
 
 class Config(BaseSettings):
@@ -14,6 +14,12 @@ class Config(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(15, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     INITIAL_COINS: int = Field(1000, env="INITIAL_COINS")
 
+    TEST_DB_HOST: str = Field(..., env="TEST_DB_HOST")
+    TEST_DB_PORT: int = Field(5432, env="TEST_DB_PORT")
+    TEST_DB_USER: str = Field(..., env="TEST_DB_USER")
+    TEST_DB_PASSWORD: str = Field(..., env="TEST_DB_PASSWORD")
+    TEST_DB_NAME: str = Field(..., env="TEST_DB_NAME")
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -21,6 +27,7 @@ class Config(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = Extra.allow
 
 
 settings = Config()

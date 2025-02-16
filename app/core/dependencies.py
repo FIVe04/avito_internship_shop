@@ -19,7 +19,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSe
     print(token)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials",
+        detail="Unauthorized.",
         headers={"WWW-Authenticate": "Bearer"},
     )
     payload = verify_token(token)

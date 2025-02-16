@@ -1,0 +1,61 @@
+services:
+  db:
+    container_name: postgres_db
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgres/data
+    restart: always
+    env_file:
+      - .env
+
+  test_db:
+    container_name: test_postgres_db
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${TEST_DB_NAME}
+      - POSTGRES_USER=${TEST_DB_USER}
+      - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_postgres:/var/lib/postgresql/data
+    restart: always
+    env_file:
+      - .env
+
+  app:
+    container_name: fastapi_app
+    build: ./
+    depends_on:
+      - db
+    command: bash -c 'while ! nc -z db 5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8080'
+    volumes:
+      - ./app:/src/app
+    ports:
+      - "8080:8080"
+    restart: always
+    env_file:
+      - .env
+
+  test:
+    container_name: test_runner
+    build: ./
+    depends_on:
+      - test_db
+    command: bash -c 'while ! nc -z db 5432; do sleep 1; done; pytest'
+    volumes:
+      - ./tests:/src/tests
+    env_file:
+      - .env
+
+volumes:
+  postgres:
+    driver: local
+  test_postgres:
+    driver: local
